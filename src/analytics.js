@@ -1,7 +1,9 @@
+import * as $ from "jquery";
+
 const createAnalytics = () => {
   let counter = 0;
 
-  document.addEventListener("click", () => counter++);
+  $(document).on("click", () => counter++);
 
   return {
     getCount() {

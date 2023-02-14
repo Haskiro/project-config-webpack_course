@@ -22,3 +22,7 @@ h1 {
 body {
   font-family: "Roboto", sans-serif;
 }
+
+.code {
+  color: crimson;
+}
