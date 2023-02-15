@@ -47,14 +47,41 @@ const cssLoaders = (extra) => {
   return loaders;
 };
 
+const babelOptions = (preset) => {
+  const options = {
+    // Используемые готовые пресеты
+    presets: [
+      [
+        "@babel/preset-env",
+        {
+          // целевые браузеры
+          targets: "> 0.25%, not dead",
+          // добавление импортов полифилов в файлы
+          useBuiltIns: "usage",
+          // версия corejs
+          corejs: 3,
+        },
+      ],
+    ],
+    // Добавление плагинов при необходимости
+    plugins: [
+      // '@babel/plugin-proposal-class-properties'
+    ],
+  };
+
+  if (preset) options.presets.push(preset);
+
+  return options;
+};
+
 module.exports = {
   // где лежат все необходимые файлы
   context: path.resolve(__dirname, "src"),
   mode: "development", // or production
   // входные точки, если одна, то вместо объекта можно поставить строку
   entry: {
-    main: "./index.js",
-    analytics: "./analytics.js",
+    main: "./index.jsx",
+    analytics: "./analytics.ts",
   },
   output: {
     // название файла, pattern [name] для динамического создания имени,
@@ -156,26 +183,25 @@ module.exports = {
         exclude: /node_modules/,
         use: {
           loader: "babel-loader",
-          options: {
-            // Используемые готовые пресеты
-            presets: [
-              [
-                "@babel/preset-env",
-                {
-                  // целевые браузеры
-                  targets: "> 0.25%, not dead",
-                  // добавление импортов полифилов в файлы
-                  useBuiltIns: "usage",
-                  // версия corejs
-                  corejs: 3,
-                },
-              ],
-            ],
-            // Добавление плагинов при необходимости
-            plugins: [
-              // '@babel/plugin-proposal-class-properties'
-            ],
-          },
+          options: babelOptions(),
+        },
+      },
+      {
+        // Использование babel для ts файлов
+        test: /\.ts$/,
+        exclude: /node_modules/,
+        use: {
+          loader: "babel-loader",
+          options: babelOptions("@babel/preset-typescript"),
+        },
+      },
+      {
+        // Использование babel для jsx файлов
+        test: /\.jsx$/,
+        exclude: /node_modules/,
+        use: {
+          loader: "babel-loader",
+          options: babelOptions("@babel/preset-react"),
         },
       },
     ],
