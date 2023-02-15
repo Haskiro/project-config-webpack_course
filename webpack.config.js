@@ -30,6 +30,23 @@ const optimization = () => {
   return config;
 };
 
+const filename = (ext) => (isDev ? `[name].${ext}` : `[name].[hash].${ext}`);
+
+const cssLoaders = (extra) => {
+  const loaders = [
+    {
+      loader: MiniCssExtractPlugin.loader,
+    },
+    "css-loader",
+  ];
+
+  if (extra) {
+    loaders.push(extra);
+  }
+
+  return loaders;
+};
+
 module.exports = {
   // где лежат все необходимые файлы
   context: path.resolve(__dirname, "src"),
@@ -42,7 +59,7 @@ module.exports = {
   output: {
     // название файла, pattern [name] для динамического создания имени,
     // pattern [contenthash] для создания имени на основе контента, чтобы избеждать возможных проблема с кэшэм
-    filename: "scripts/[name].[contenthash].js",
+    filename: `scripts/${filename("js")}`,
     // куда все файлы складывать
     path: path.resolve(__dirname, "dist"),
   },
@@ -83,7 +100,7 @@ module.exports = {
     }),
     // Плагин для создания отдельных файлов со стилями
     new MiniCssExtractPlugin({
-      filename: "styles/[name].[contenthash].css",
+      filename: `styles/${filename("css")}`,
     }),
   ],
   // добавление loaders
@@ -96,19 +113,22 @@ module.exports = {
         // важен порядок, webpack читает справа налево
         // use: ["style-loader", "css-loader"], - стили внутри тега <style></style>
         // стили в отдельном файле
-        use: [
-          {
-            loader: MiniCssExtractPlugin.loader,
-          },
-          "css-loader",
-        ],
+        use: cssLoaders(),
+      },
+      {
+        test: /\.less$/,
+        use: cssLoaders("less-loader"),
+      },
+      {
+        test: /\.s[ac]ss$/,
+        use: cssLoaders("sass-loader"),
       },
       {
         // Использование изображений
         test: /\.(png|jp(e?)g|svg|gif)$/,
         type: "asset/resource",
         generator: {
-          filename: "assets/[hash][ext]",
+          filename: `assets/${filename("[ext]")}`,
         },
       },
       {
@@ -117,7 +137,7 @@ module.exports = {
         type: "asset/resource",
         // генерирование имени и пути
         generator: {
-          filename: "assets/[hash][ext]",
+          filename: `assets/${filename("[ext]")}`,
         },
       },
       {
