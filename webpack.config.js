@@ -6,6 +6,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const TerserWebpackPlugin = require("terser-webpack-plugin");
 const ESLintPlugin = require("eslint-webpack-plugin");
+const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
 
 const isDev = process.env.NODE_ENV === "development";
 const isProd = !isDev;
@@ -75,6 +76,45 @@ const babelOptions = (preset) => {
   return options;
 };
 
+const plugins = () => {
+  const base = [
+    // внутрь будут подключаться все актуальные версии скриптов
+    new HTMLWebpackPlugin({
+      // шаблон, который будет использовать webpack для сборки
+      template: "./index.html",
+      minify: {
+        collapseWhitespace: isProd,
+      },
+    }),
+    // Плагин для удаления старых версий файлов из папки dist
+    new CleanWebpackPlugin(),
+    // Плагин для переноса в папку dist различных картинок, иконок
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, "src/assets/favicon.ico"),
+          to: path.resolve(__dirname, "dist/assets"),
+        },
+      ],
+    }),
+    // Плагин для создания отдельных файлов со стилями
+    new MiniCssExtractPlugin({
+      filename: `styles/${filename("css")}`,
+    }),
+    // Плагин для поддержки eslint
+    new ESLintPlugin({
+      extensions: ["js", "jsx"],
+    }),
+  ];
+
+  // Запуск анализа в production режиме
+  if (isProd) {
+    base.push(new BundleAnalyzerPlugin());
+  }
+
+  return base;
+};
+
 module.exports = {
   // где лежат все необходимые файлы
   context: path.resolve(__dirname, "src"),
@@ -107,34 +147,7 @@ module.exports = {
   },
   devtool: isDev ? "source-map" : "eval",
   // все необходимые плагины, ставятся через ключевое слово new
-  plugins: [
-    // внутрь будут подключаться все актуальные версии скриптов
-    new HTMLWebpackPlugin({
-      // шаблон, который будет использовать webpack для сборки
-      template: "./index.html",
-      minify: {
-        collapseWhitespace: isProd,
-      },
-    }),
-    // Плагин для удаления старых версий файлов из папки dist
-    new CleanWebpackPlugin(),
-    // Плагин для переноса в папку dist различных картинок, иконок
-    new CopyPlugin({
-      patterns: [
-        {
-          from: path.resolve(__dirname, "src/assets/favicon.ico"),
-          to: path.resolve(__dirname, "dist/assets"),
-        },
-      ],
-    }),
-    // Плагин для создания отдельных файлов со стилями
-    new MiniCssExtractPlugin({
-      filename: `styles/${filename("css")}`,
-    }),
-    new ESLintPlugin({
-      extensions: ["js", "jsx"],
-    }),
-  ],
+  plugins: plugins(),
   // добавление loaders
   module: {
     rules: [
