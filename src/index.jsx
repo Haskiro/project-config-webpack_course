@@ -9,7 +9,7 @@ import "./styles/styles.css";
 import "./styles/less.less";
 import "./styles/scss.scss";
 import React from "react";
-import { render } from "react-dom";
+import { createRoot } from "react-dom/client";
 
 const post = new Post("webpack post title", WebpackLogo);
 
@@ -17,25 +17,26 @@ $("pre").addClass("code").html(post.toString());
 
 const App = () => {
   return (
-    <div class="container">
+    <div className="container">
       <h1>Webpack course</h1>
       <hr />
-      <div class="logo"></div>
+      <div className="logo"></div>
       <hr />
       <pre></pre>
 
-      <div class="box">
+      <div className="box">
         <h2>Less</h2>
       </div>
 
-      <div class="card">
+      <div className="card">
         <h2>Card</h2>
       </div>
     </div>
   );
 };
 
-render(<App />, document.getElementById("app"));
+const root = createRoot(document.getElementById("app"));
+root.render(<App />);
 
 // console.log("CSV:", csv);
 // console.log("JSON:", json);

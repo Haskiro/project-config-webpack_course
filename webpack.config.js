@@ -5,6 +5,7 @@ const CopyPlugin = require("copy-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const TerserWebpackPlugin = require("terser-webpack-plugin");
+const ESLintPlugin = require("eslint-webpack-plugin");
 
 const isDev = process.env.NODE_ENV === "development";
 const isProd = !isDev;
@@ -104,6 +105,7 @@ module.exports = {
     port: 4200,
     hot: isDev,
   },
+  devtool: isDev ? "source-map" : "eval",
   // все необходимые плагины, ставятся через ключевое слово new
   plugins: [
     // внутрь будут подключаться все актуальные версии скриптов
@@ -128,6 +130,9 @@ module.exports = {
     // Плагин для создания отдельных файлов со стилями
     new MiniCssExtractPlugin({
       filename: `styles/${filename("css")}`,
+    }),
+    new ESLintPlugin({
+      extensions: ["js", "jsx"],
     }),
   ],
   // добавление loaders
@@ -181,19 +186,23 @@ module.exports = {
         // Использование babel для js файлов
         test: /\.js$/,
         exclude: /node_modules/,
-        use: {
-          loader: "babel-loader",
-          options: babelOptions(),
-        },
+        use: [
+          {
+            loader: "babel-loader",
+            options: babelOptions(),
+          },
+        ],
       },
       {
         // Использование babel для ts файлов
         test: /\.ts$/,
         exclude: /node_modules/,
-        use: {
-          loader: "babel-loader",
-          options: babelOptions("@babel/preset-typescript"),
-        },
+        use: [
+          {
+            loader: "babel-loader",
+            options: babelOptions("@babel/preset-typescript"),
+          },
+        ],
       },
       {
         // Использование babel для jsx файлов
