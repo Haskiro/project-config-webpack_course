@@ -3,9 +3,32 @@ const HTMLWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
+const TerserWebpackPlugin = require("terser-webpack-plugin");
 
 const isDev = process.env.NODE_ENV === "development";
-console.log(isDev);
+const isProd = !isDev;
+
+const optimization = () => {
+  const config = {
+    splitChunks: {
+      // вынос повторяющихся модулей в отдельные вендоры
+      chunks: "all",
+    },
+    runtimeChunk: "single",
+  };
+
+  if (isProd) {
+    config.minimizer = [
+      // Оптимизация js
+      new TerserWebpackPlugin(),
+      // Оптимизация css
+      new CssMinimizerPlugin(),
+    ];
+  }
+
+  return config;
+};
 
 module.exports = {
   // где лежат все необходимые файлы
@@ -19,7 +42,7 @@ module.exports = {
   output: {
     // название файла, pattern [name] для динамического создания имени,
     // pattern [contenthash] для создания имени на основе контента, чтобы избеждать возможных проблема с кэшэм
-    filename: "[name].[contenthash].js",
+    filename: "scripts/[name].[contenthash].js",
     // куда все файлы складывать
     path: path.resolve(__dirname, "dist"),
   },
@@ -32,13 +55,7 @@ module.exports = {
       "@": path.resolve(__dirname, "src"),
     },
   },
-  optimization: {
-    splitChunks: {
-      // вынос повторяющихся модулей в отдельные вендоры
-      chunks: "all",
-    },
-    runtimeChunk: "single",
-  },
+  optimization: optimization(),
   devServer: {
     port: 4200,
     hot: isDev,
@@ -49,6 +66,9 @@ module.exports = {
     new HTMLWebpackPlugin({
       // шаблон, который будет использовать webpack для сборки
       template: "./index.html",
+      minify: {
+        collapseWhitespace: isProd,
+      },
     }),
     // Плагин для удаления старых версий файлов из папки dist
     new CleanWebpackPlugin(),
@@ -87,6 +107,9 @@ module.exports = {
         // Использование изображений
         test: /\.(png|jp(e?)g|svg|gif)$/,
         type: "asset/resource",
+        generator: {
+          filename: "assets/[hash][ext]",
+        },
       },
       {
         // Использование шрифтов
