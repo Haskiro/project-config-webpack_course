@@ -150,6 +150,34 @@ module.exports = {
         test: /\.csv$/,
         use: ["csv-loader"],
       },
+      {
+        // Использование babel для js файлов
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: {
+          loader: "babel-loader",
+          options: {
+            // Используемые готовые пресеты
+            presets: [
+              [
+                "@babel/preset-env",
+                {
+                  // целевые браузеры
+                  targets: "> 0.25%, not dead",
+                  // добавление импортов полифилов в файлы
+                  useBuiltIns: "usage",
+                  // версия corejs
+                  corejs: 3,
+                },
+              ],
+            ],
+            // Добавление плагинов при необходимости
+            plugins: [
+              // '@babel/plugin-proposal-class-properties'
+            ],
+          },
+        },
+      },
     ],
   },
 };
